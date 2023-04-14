@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(cuid())
+  fname String
+  lname String
+  car Car? // Single Relation With Car Model
+  carBlogs  CarBlog[] // One-to-many Relation with CarBlog --> user Can have multiple blogs
+  friendId String? @unique
+  friend User? @relation("Friend", fields: [friendId], references: [id]) // Self-Relation With User as (Friend)
+  friendOf User? @relation("Friend")
+} 
+
+model Car {
+  id String @default(cuid()) @id
+  color String
+  bought Boolean @default(false)
+  name String
+  userId String @unique
+  user User @relation(fields: [userId], references: [id]) // Create Relation With User Model for ( one-to-one ) 
+}  
+
+model CarBlog {
+  id String @default(cuid()) @id
+  content String 
+  createdAt DateTime @default(now())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories CategoryCarBlogs[] // many-to-many Relations 
+}
+
+model CategoryCarBlogs {
+id String @id @default(cuid())
+name String
+carBlogs CarBlog[]
+}
+
+// model CategoriesOnCarBlogs {
+//   carBlog CarBlog @relation(fields: [carBlogId], references: [id])
+//   carBlogId String // relation scalar field ( used in '@relation' attribute above )
+//   category CategoryCarBlogs @relation(fields: [categoryId], references: [id])
+//   categoryId String // relation scalar field ( used in '@relation' attribute above )
+//   assignedAt DateTime @default(now())
+//   assignedBy String
+
+//   @@id([carBlogId, categoryId])
+// }
